@@ -19,22 +19,20 @@
                 const list = document.getElementById("fileList");
 
                 data.forEach(item => {
-                    if (item.name.toLowerCase().endsWith(".html")) {
+                    if (item.type === "file") {
                         const li = document.createElement("li");
                         const a = document.createElement("a");
 
-                        a.href = item.html_url.replace(
-                            "https://github.com/",
-                            "https://raw.githubusercontent.com/"
-                        ).replace("/blob/", "/");
-
+                        a.href = `https://portaldash.github.io/perspective/Html/${item.name}`;
                         a.textContent = item.name;
+
                         li.appendChild(a);
                         list.appendChild(li);
                     }
                 });
             } catch (err) {
-                document.body.innerHTML += "<p>Error loading files.</p>";
+                console.error(err);
+                document.body.insertAdjacentHTML("beforeend", "<p>Failed to load file list.</p>");
             }
         }
 
