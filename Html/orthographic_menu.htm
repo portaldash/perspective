@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+    <title>Main Menu</title>
+    <script src="../scripts/nobackspace.js"></script>
+    <script src="../scripts/noselect.js"></script>
+    <link href="styles/ui.css" rel="stylesheet" type="text/css" />
+    <link href="styles/center.css" rel="stylesheet" type="text/css" />
+    <style>
+      li {
+        cursor:pointer;
+      }
+    </style>
+    <script src="../scripts/jquery1.7.1.min.js"></script>
+    <script type="text/javascript">
+        function OnSelect()
+        {
+            var elem = $("#selection");
+            var Toggle = function() {
+                if (elem.css('visibility') == 'hidden') {
+                    elem.css('visibility', 'visible');
+                } else {
+                    elem.css('visibility', 'hidden');
+                }    
+            };
+
+            Toggle();
+            setInterval(Toggle, 500);
+        }
+
+        function OnResize()
+        {
+          // counteract the global zoom level for this page because the
+          // orthographic title screen uses a fixed resolution texture
+          var zoom = Math.pow(1.2, GetZoomLevel());
+          document.body.style.zoom = 1/zoom;
+        }
+
+        $(document).ready(function() {
+          Listen('Select', OnSelect);
+          Listen("OnResize", OnResize);
+          OnResize();
+        });
+
+    </script>
+</head>
+<body style="font-family: pixelFont; text-align: center; margin:0;">
+
+<div class="outer">
+  <div class="inner">
+   <table style="width: 100%; height: 512px;">
+        <tr><td>
+            <div style="margin-top: -100px; margin-bottom: -100px; font-size: 120pt; color: rgb(0, 165, 255);">
+                ORTHO<br /><div style="margin-top: -20px;">GRAPHIC</div>
+            </div>
+        </td></tr>
+        <tr>
+            <td id="selection" style="font-size: 40px; color: #f6a053;">
+                <span style="text-decoration: blink; color: #ff79bd;">*</span> START GAME<br />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div style="font-size: 20pt; color: #fff; margin-top: -25px;">
+                    &copy;2012-2019 DIGIPEN (USA) CORPORATION<br />ALL RIGHTS RESERVED.
+                </div>
+            </td>
+        </tr>
+    </table>
+  </div>
+</div>
+</body>
+</html>

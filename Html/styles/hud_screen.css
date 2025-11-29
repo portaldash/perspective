@@ -1,0 +1,179 @@
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: rgba(0,0,0,0);
+}
+
+.popup {
+  position: absolute;
+  bottom: 30%;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.tagline_layer_2 {
+  width: 100%;
+  text-align: center;
+  font-size: 30pt;
+  font-family: perspectiveFont;
+  color: #FFFFFF;
+}
+
+.tagline_layer_1 {
+  width: 100%;
+  text-align: center;
+  font-size: 30pt;
+  font-family: theArcade;
+  font-variant: small-caps;
+  color: #FFFFFF;
+}
+
+.tagline_layer_0 {
+  width: 100%;
+  text-align: center;
+  font-size: 10pt;
+  font-family: perspectiveFont;
+  color: #FF9900;
+}
+
+#arcade_score {
+  font-family: pixelFont;
+  font-weight: bold;
+  color: #DDD;
+  font-size: 60px;
+  position: absolute;
+  top: 5%;
+  width: 100%;
+  text-align: center;
+  display: none;
+}
+
+#message {
+  background-color: rgba(20, 20, 20, 0.8);
+  border-radius: 5px;
+  color: #0099CC;
+  display: inline;
+  font-family: perspectiveFont;
+  margin: 0 auto;
+  padding: 10px;
+  text-align: center;
+  width: 40%;
+}
+
+#credits_title
+{
+  font-family: verdana;
+  color: #FF9900;
+  font-size: 18pt;
+  position: absolute;
+  bottom: 150pt;
+  left: 100pt;
+}
+
+#credits_subline
+{
+  font-family: verdana;
+  color: #FFFFFF;
+  font-size: 16pt;
+  position: absolute;
+  bottom: 100pt;
+  left: 100pt;
+}
+
+#message b {
+  font-family: perspectiveFont;
+  font-weight: bold;
+  color: #FF9900;
+}
+
+#watermark {
+  top: 10px;
+  left: 10px;
+  position: absolute;
+}
+
+.layer_2 {
+  color: #FFFFFF;
+  padding: 8px;
+  border-radius: 5px;
+  font-size: 15px;
+  font-family: "Courier New", verdana;
+}
+
+.layer_1 {
+  color: #FFFFFF;
+  padding: 8px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-family: "Courier New", verdana;
+  font-weight: bold;
+}
+
+.layer_0 {
+  color: #FFFFFF;
+  padding: 8px;
+  font-size: 13px;
+  font-family: "Courier New", verdana;
+}
+
+.graphbox {
+  display: none;
+  float: right;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 12px;
+  font-family: sans-serif;
+  box-shadow: 1px 1px 3px #888;
+  border-radius: 5px;
+  padding: 5px;
+  margin: 8px;
+}
+.graphbox div {
+  float: left;
+  margin: 0;
+  padding: 0;
+  padding-right: 2px;
+  text-align: right;
+}
+#fpsgraph {
+  float: right;
+  border: 1px solid #000;
+  border-radius: 4px;
+  margin: 0;
+  padding: 0;
+}
+#indicator {
+position: absolute;
+display:none;
+}
+#ticket {
+  top: 24px;
+  right: 24px;
+  position: absolute; 
+  width: 128px; 
+  height: 64px; 
+  background-image:url('../img/ticket.png');
+  background-size:128px 64px;
+  background-repeat:no-repeat;
+  text-align:center;
+  padding-top: 19px;
+  font-size: 20px;
+  font-family: perspectiveFont;
+  color: #58d3ff;
+  opacity:0;
+}
+
+.player {
+display: inline-block;
+  position: relative;			
+  width: 1em;
+  height: 1.2em; 
+  background-image:url('../img/player.png');
+  background-size: 1.9em 1.3em;
+  background-position: center;
+  background-repeat:no-repeat;
+  padding:0;
+  vertical-align:-0.2em;
+}

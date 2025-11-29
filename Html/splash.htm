@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+
+  <link href="styles/splash.css" rel="stylesheet" type="text/css" />
+  <script src="../scripts/jquery1.7.1.min.js"></script>
+  <script src="../scripts/noselect.js"></script>
+  <script src="../scripts/menu.js"></script>
+  <script src="../scripts/nobackspace.js"></script>
+  
+  <title>Splash Screens</title>
+  
+  <script>
+    var beenThereDoneThat = false; // hack for not calling main_menu twice... - Pohung
+
+    function skipSplash() {
+      gotoUrl('main_menu.htm'); 
+      beenThereDoneThat = true;
+    }
+    
+    function userInfo() {
+      var host = GetHost();
+      $.ajax({
+        url:"http://"+host+"/user_info.php",
+        dataType: 'jsonp' // prevents cross-domain errors
+      });
+      jQuery.get("http://"+host+"/user_info.php");
+    }
+    
+    function gotoMenu(e) {
+      gotoUrl("main_menu.htm");
+    }
+
+    function onLoad() {
+      // userInfo();
+     
+      var dp = document.getElementById("digipen_splash");
+      dp.addEventListener("webkitAnimationEnd", gotoMenu, false);
+      
+      var fadeTime = 2000;
+      $('#splash_img').hide().fadeIn(fadeTime).fadeOut(fadeTime, function()
+      {
+        $('#splash_img').attr('src', "splash/Widdershins_Bear.png").fadeIn(fadeTime).fadeOut(fadeTime, function() 
+        {
+          gotoMenu();
+        });
+      });
+      
+    }
+  </script>
+</head>
+  
+<body onload="onLoad()" onkeydown="skipSplash()" oncontextmenu="skipSplash()" onclick="skipSplash()">
+  <div>
+  <div id="digipen_splash">
+    <img id="splash_img" src="splash/digipenLogo.png"/>
+  </div>
+  </div>
+</body>
+</html>

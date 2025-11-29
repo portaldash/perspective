@@ -1,0 +1,90 @@
+@font-face { font-family: perspectiveFont; src: url('../fonts/orbitron-light-webfont.ttf'); }
+@font-face { font-family: titleFont; src: url('../fonts/orbitron-black-webfont.ttf'); }
+@font-face { font-family: creditsFont; src: url('../fonts/Surface-Medium.otf'); }
+
+body {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+h1,h2,h3,h4,h5,h6{
+	margin:6px auto;
+	font-family:titleFont;
+	color:#09C;
+}
+h1{
+	font-size:25pt;
+	text-transform:uppercase;
+}
+
+h3{
+	font-size:15pt;
+	text-transform:uppercase;
+}
+
+.back{
+	position:fixed;
+	left:24px;
+	bottom:24px;
+	color:#09C;
+	font-size:20px;
+	background-color:rgba(255,255,255,0.2);
+}
+
+.button{
+	padding:4px 4px 2px;
+	border-radius:2px;
+	background:#333;
+	cursor:pointer;
+  margin: 4px 0px;
+  font-family:perspectiveFont;
+}
+.button:hover{
+	background:#F90;
+	color:#000;
+}
+
+#credits_wrapper {
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  font-size: 15pt;
+  color: #FFFFFF;
+  line-height: 180%;
+}
+
+.credit_cell {
+  float: left;
+  width: 50%;
+}
+
+body{
+  overflow-y:visible;
+  color:#000;
+  font-family: creditsFont;
+}
+ul{
+  list-style:none;
+  text-align:center;
+  margin:auto;
+}
+
+::-webkit-scrollbar {
+	width:15px;
+	height:10px;
+	opacity:.5;
+  background:#333;
+}
+
+::-webkit-scrollbar-thumb {
+	width:15px;
+	height:13px;
+	background:#FF9900;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	width:15px;
+	height:13px;
+	background:#0099CC;
+}
+
+

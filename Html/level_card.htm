@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+    <title>Level Card</title>
+    <link href="styles/user_created.css" rel="stylesheet" type="text/css" />
+    <link href="styles/ui.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+  <div id='level_card' class='level' style='opacity:0'>
+    <div class='level_card_content' style='display:none'>
+      <a href='http://$host/$lvlUrl'><div class='levelFrame' onclick='downloadLevel("$name")'></div></a>
+      <h3>$name</h3>
+      By: $author
+      <img class='report' title='Report Level' onclick='showReport(true, "$name")' src='img/report.png' width='16px' height='16px'/>            
+      <img src='$dir$imgUrl' width='320' height='180' class='thumbnail' />
+      <table class='stats'>
+      <tr><td>Difficulty:</td><td>$difficulty</td></tr>
+        <tr><td>Popularity:</td><td>$popularity</td></tr>
+        <tr><td>Rating:</td><td>$rating</td></tr>
+      </table>
+      <p class='description'>$description</p>
+      <span class='date'>$dateAdded</span>
+      <a class='show_comments' onclick='showComments(true, "$name")'>Show Comments</a>
+    </div>
+  </div>
+</body>
+</html>

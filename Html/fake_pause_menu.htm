@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+    <title>Pause Menu</title>
+    <link href="styles/ui.css" rel="stylesheet" type="text/css" />
+    <style>
+    li{
+        cursor:pointer;
+    }
+  body
+  {
+    background-color:rgba(0,0,0,0.5);
+  }
+    </style>
+    <script src="../scripts/jquery1.7.1.min.js"></script>
+    <script src="../scripts/keynav.js"></script>
+    <script src="../scripts/noselect.js"></script>
+    <script src="../scripts/menu.js"></script>
+    <script src="../scripts/nobackspace.js"></script>
+    <script>
+    $(document).keydown(function(e) {
+      if (e.keyCode  == 27) // escape
+      {
+        SendMessage("PauseMenu");
+      }
+    });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="persp_logo"></div>
+        <ul>
+            <li class="withfocus" onclick="SendMessage('ResumeGame')">Resume Game</li>
+            <li class="disabled">Return to Hub World</li>
+            <li class="disabled">Restart Level</li>
+            <li class="disabled">Credits</li>
+            <li class="disabled">Return to Main Menu</li>
+            <li class="withoutfocus" onclick="gotoUrl('confirm.htm?question=Quit Game?&message=FakeQuitGame&backpage=fake_pause_menu.htm')">Quit Game</li>
+        </ul>
+    </div>
+</body>
+</html>

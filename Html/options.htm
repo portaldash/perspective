@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+    <link href="styles/ui.css" rel="stylesheet" type="text/css" />
+    <title>Options</title>
+    <style>
+      body
+      {
+        background-color:rgba(0,0,0,0.5);
+      }
+    </style>
+    <script src="../scripts/jquery1.7.1.min.js"></script>
+    <script src="../scripts/keynav.js"></script>
+    <script src="../scripts/noselect.js"></script>
+    <script src="../scripts/menu.js"></script>
+    <script src="../scripts/gup.js"></script>
+    <script type="text/javascript">
+    var g_host = "null";
+    var g_defaultHost;
+    $(document).ready(function() {
+      Listen('SetResolutions', setResolutions);
+      Listen('SetMouseData', setMouseData);
+      Listen('SetHostData', setHostData);
+      Listen('SetVolumeData', setVolumeData);
+      Listen('SetFxaaData', setFxaaData);
+      
+      $(document).keydown(function(e) {
+        switch(e.which) {
+        case VK_ESC:
+          quitOptions();
+          break;
+        }
+      });
+      
+      SendMessage('InitOptionsMenu');
+     
+      $(document).keydown(function(e) {
+        var sensitivityInput = this.getElementById('sensitivity_input');
+        var volumeInput = this.getElementById('volume_input')
+        var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
+        switch(key) {
+          case VK_LEFT: 
+          case VK_A:
+            // makes sure volume has focus.
+            if ($('#volume_option').hasClass('withfocus')) {
+              if (volumeInput.value <= volumeInput.min) break;
+              volumeInput.value--;
+              updateVolume(volumeInput.value);
+            } else if ($('#sensitivity_option').hasClass('withfocus')) {
+              if (sensitivityInput.value <= sensitivityInput.min) break;
+              sensitivityInput.value -= sensitivityInput.step;
+              updateSensitivity('sensitivity', sensitivityInput.value);
+            }
+            break;
+          case VK_RIGHT: 
+          case VK_D:
+            // makes sure volume has focus.
+            if ($('#volume_option').hasClass('withfocus')) {
+              if (volumeInput.value == volumeInput.max) break;
+              volumeInput.value++
+              updateVolume(volumeInput.value);
+            } else if ($('#sensitivity_option').hasClass('withfocus')) {
+              if (sensitivityInput.value >= sensitivityInput.max ) break;
+              sensitivityInput.value = parseFloat(sensitivityInput.value) + parseFloat(sensitivityInput.step);
+              updateSensitivity('sensitivity', sensitivityInput.value);
+            }
+            break;
+        }
+      });
+
+      SendMessageToEngine("AudioEventStr", "RaiseMusicVolume");
+    
+    });
+
+    function setMouseData(mouseSensitivity, invMouse) {
+      var invMouseCheckBox = document.getElementById("inverseMouse");
+      invMouseCheckBox.checked = invMouse;
+      var sensitivityInput = document.getElementById("sensitivity_input");
+      sensitivityInput.value = mouseSensitivity;
+      updateSensitivity('sensitivity', sensitivityInput.value);
+    }
+    
+    function setHostData(defaultHost, host, useDefault) {
+      document.getElementById("use_default_host").checked = useDefault;
+      g_defaultHost = defaultHost;
+      g_host = host;
+      updateHostField(useDefault);
+    }
+    
+    function updateHostField(useDefault) {
+      var hostField = document.getElementById("host_field");
+      hostField.disabled = useDefault;
+      hostField.value = useDefault ? g_defaultHost : g_host;
+    }
+    
+    function updateHost(host) {
+      g_host = host;
+    }
+
+    function ToggleCheck() {
+      SendMessageToEngine("ToggleFullscreen");
+    }
+
+    function UpdateFxaa() {
+      var box = document.getElementById("fxaa");
+      SendMessage("SetFxaaEnabled", box.checked);
+    }
+
+    function setFxaaData(value) {
+      var box = document.getElementById("fxaa");
+      box.checked = value;
+    }
+    
+    function updateVolume(value) {
+      document.getElementById('volume').innerHTML=value;
+      var volume = parseFloat(value);
+      SendMessage("SetVolume", volume);
+    }
+    
+    function setVolumeData(value) {
+      document.getElementById('volume_input').value = value;
+      document.getElementById('volume').innerHTML = "" + value;
+    }
+
+    function updateSensitivity(rangeName, value) {
+      document.getElementById(rangeName).innerHTML = "" + parseFloat(value).toFixed(1);
+    }
+
+    var resolutionList = [];
+
+    function setResolutions(resolutions) {
+      var rs = document.getElementById( 'resolutionSelect' );
+      while (rs.length > 0) {
+        rs.remove(0);
+      }
+      for (var i = 0; i < resolutions.length; i++)  {
+        var option = new Option;
+        option.text = resolutions[i].x + "x" + resolutions[i].y;
+        option.value = resolutions[i];
+        resolutionList[i] = resolutions[i];
+        rs.add(option);
+      }
+    }
+    
+    function quitOptions() {
+      var invMouse = document.getElementById("inverseMouse").checked;
+      var useDefaultHost = document.getElementById("use_default_host").checked;
+      var sensitivity = parseFloat(document.getElementById("sensitivity_input").value);
+      SendMessage("SaveOptions", g_host, useDefaultHost, invMouse, sensitivity);
+      var url = gup('backpage');
+      gotoUrl(url);
+    }
+	</script>
+</head>
+<body>
+  <div class="container">
+    <h1>Options</h1>
+        <ul>
+            <li class="withfocus options" id="fullscreen_toggle" onClick="ToggleCheck()">
+              <table border="0"><tr>
+                <td class="options_category">
+                  <div id="windowed">Toggle Fullscreen</div>
+                </td>
+              </tr></table>
+            </li>
+            <li class="withoutfocus options" onClick="#">
+              <table border="0">
+              <tr>
+                <td class="options_category">
+                  Resolution
+                </td>
+                <td class="options_modifier">
+                  <select id="resolutionSelect" onChange="SendMessage('SetResolution', resolutionList[this.selectedIndex])"></select>
+                </td>
+              </tr>
+              </table>
+            </li>
+            <li class="withoutfocus options">
+              <table border="0"><tr>
+                <td class="options_category">
+                  Inverse Mouse
+                </td>
+                <td class="options_modifier">
+                  <input id="inverseMouse" value="false" type="checkbox" />
+                </td>
+              </tr></table>
+            </li>
+            <li id="volume_option" class="withoutfocus options" onClick="#">
+              <table border="0"><tr>
+                <td class="options_category">
+                  Volume
+                </td>
+                <td class="options_modifier">
+                  <input id="volume_input" type="range" min="0" max="11" value="10" step="1" onchange="updateVolume(this.value)" />
+                  <span id="volume">10</span>
+                </td>
+              </tr></table>
+            </li>
+            <li id="sensitivity_option" class="withoutfocus options" onClick="#">
+              <table border="0"><tr>
+                <td class="options_category">
+                  Mouse Speed
+                </td>
+                <td class="options_modifier">
+                  <input id="sensitivity_input" type="range" min="0.1" max="5" value="1" step="0.1" onchange="updateSensitivity('sensitivity', this.value)" />
+                  <span id="sensitivity">1</span>
+                </td>
+              </tr></table>
+            </li>
+            <li class="withoutfocus options" id="fxaa_toggle">
+              <table border="0"><tr>
+                <td class="options_category">
+                  Antialiasing
+                </td>
+                <td class="options_modifier">
+                  <input id="fxaa" value="false" type="checkbox" onchange="UpdateFxaa()" />
+                </td>
+              </tr></table>
+            </li>
+
+        </ul>
+            <!-- moved it out so it doesn't affect the menus but the values don't break when sending saved statuses to the engine -->
+            <li class="withoutfocus" style="display: none;" onClick="#">
+              Use Default Host
+              <input id="use_default_host" type="checkbox" onclick="updateHostField(this.checked)" /><br />
+            </li>
+            <li class="withoutfocus" style="display: none;" onClick="#">
+              Host Address
+              <input id="host_field" type="text" onkeyup="updateHost(this.value)" />
+            </li>
+      
+        <div class="back button" onclick="quitOptions()">Back</div>
+	</div>
+</body>
+</html>

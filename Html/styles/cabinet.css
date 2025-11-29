@@ -1,0 +1,43 @@
+body, table, select, input
+{
+padding: 0;
+margin: 0;
+border: 0;
+
+font-size: 24pt;
+text-align: center;
+}
+
+.header
+{
+height: 100px;
+width: 512px;
+padding-top: 28px;
+letter-spacing: 4pt;
+float: left;
+overflow: hidden;
+}
+
+.locked
+{
+color: rgb(0, 0, 0);
+background-color: #424242;
+}
+
+.unlocked
+{
+color: rgb(255, 255, 255);
+background-color: rgb(0,50,20);
+}
+
+.beaten
+{
+color: rgb(0, 0, 0);
+background-color: rgb(0,150,0);
+}
+
+.credits
+{
+  color: #fff;
+  background-color: rgba(0,0,0,0);
+}

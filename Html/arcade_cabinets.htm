@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+  <title>Arcade Cabinets</title>
+  <link href="styles/ui.css" rel="stylesheet" type="text/css" />
+  <link href="styles/cabinet.css" rel="stylesheet" type="text/css" />
+  <script src="../scripts/jquery1.7.1.min.js"></script>
+  <script src="../scripts/noselect.js"></script>
+  <script src="../scripts/menu.js"></script>
+  <script src="../scripts/nobackspace.js"></script>
+  <script type="text/javascript">
+    function UpdateLevels()
+    {
+      var UnlockedLevels = GetUnlockedLevelList();
+      for (var i = 0; i < UnlockedLevels.length; ++i)
+      {
+        var element = document.getElementById(UnlockedLevels[i]);
+        $(element).removeClass();
+        $(element).addClass("unlocked header");
+      }
+    
+      var CompletedLevels = GetCompletedLevelList();
+      for (var i = 0; i < CompletedLevels.length; ++i)
+      {
+        var element = document.getElementById(CompletedLevels[i]);
+        $(element).removeClass();
+        $(element).addClass("beaten header");
+      }
+    }
+
+    function WriteItem(level, tagline)
+    {
+      return ('<div class="locked header" id="' + level + '">' + tagline + '</div>');
+    }
+    
+    function InitCabinets()
+    {
+      var content = "";
+      var LevelList = GetLevelList();
+      var LevelTaglines = GetLevelTaglineList();
+      for (var i = 0; i < LevelList.length + (2 - LevelList.length % 2); ++i)
+      {
+        if (i < LevelList.length)
+        {
+          content += WriteItem(LevelList[i], LevelTaglines[i]);
+        }
+      }
+      document.getElementById('content').innerHTML = content;
+      UpdateLevels();
+
+      // send data about level titles
+      for (var i = 0; i < LevelList.length; ++i)
+      {
+        var el = document.getElementById( LevelList[i] );
+        var off = $(el).offset();
+        var left0 = (off.left) * 1.0 / ($(window).width());
+        var right0 = (off.left + $(el).width()) * 1.0 / ($(window).width());
+        var top0 = (off.top) * 1.0 / ($(window).height());
+        var bottom0 = (off.top + $(el).height()) * 1.0 / ($(window).height());
+
+        var rect = [left0, right0, top0, bottom0];
+        SendMessage("LevelTitleRect", LevelList[i], rect);
+      }
+    }
+    
+    window.onload = function()
+    {
+      if (typeof Listen == 'function')
+      {
+        Listen("InitCabinets", InitCabinets);
+        Listen("OnResize", InitCabinets);
+        SendMessage("Loaded");
+      }
+      else // testing code
+      {
+        var content = '';
+        content += WriteItem("level1", "level1 tagline");
+        content += WriteItem("level2", "level2 tagline");
+        content += WriteItem("level3", "level3 tagline");
+        document.getElementById('content').innerHTML = content;
+      }
+    };
+  </script>
+</head>
+<body>
+<div id='content'>test</div>
+</body>

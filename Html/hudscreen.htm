@@ -1,0 +1,568 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+  <link href="styles/hud_screen.css" rel="stylesheet" type="text/css" />
+  <link href="styles/center.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="../scripts/jquery1.7.1.min.js"></script>
+  <script type="text/javascript" src="../scripts/keynav.js"></script>
+  <script type="text/javascript" src="../scripts/noselect.js"></script>
+  <script type="text/javascript" src="../scripts/noRightClick.js"></script>
+  <script type="text/javascript" src="../scripts/nobackspace.js"></script>
+  <style type="text/css">
+    /* Bug: Loading fonts from a stylesheet doesn't work when running CEF via Game.exe but does it work in editor for some reason.*/
+    @font-face { font-family: perspectiveFont; src: url('fonts/orbitron-light-webfont.ttf'); }
+    @font-face { font-family: titleFont; src: url('fonts/orbitron-light-webfont.ttf'); }
+    @font-face { font-family: creditsFont; src: url('fonts/Surface-Medium.otf'); }
+    @font-face { font-family: theArcade; src: url('fonts/Surface-Medium.otf'); }
+    @font-face { font-family: arcadeFont; src: url('fonts/ka1.tff'); }
+    @font-face { font-family: pixelFont; src: url('fonts/8bitoperator_jve.otf'); }
+  </style>
+  <script>
+    var fpses = [];
+    var g_message_duration = 0;
+    var g_fadeDur;
+    var message_stack;
+    var level_tagline_timer = 0;
+
+    var colors = [
+      "#D42C38",
+      "#46DA08",
+      "#8DD695",
+      "#3807B6",
+      "#9F0478",
+      "#7848D3",
+      "#8F829E",
+      "#74A2B9",
+      "#770A79",
+      "#BD24F0",
+      "#09BAF0",
+      "#9AE218"
+    ];
+
+    var g_names = [];
+    function UpdateSystemNames(names)
+    {
+      g_names = names;
+    }
+
+    var all_times = [];
+    function UpdateSystemTimes(times)
+    {
+      // update names
+      var systems = document.getElementById("systemnames");
+
+      systems.innerHTML = "";
+      for (var i in g_names)
+      {
+        systems.innerHTML += "<li style='list-style: square; color: " + colors[i] + ";'>";
+        systems.innerHTML += times[i].toFixed(1) + " ms - ";
+        systems.innerHTML += g_names[i];
+        systems.innerHTML += "</li>";
+      }
+
+      // update graph
+      all_times.push(times);
+      if (all_times.length > 32)
+        all_times.shift();
+
+      var canvas = document.getElementById("timegraph");
+      var ctx = canvas.getContext("2d");
+
+      ctx.fillStyle = "rgba(255,255,255,1)";
+      var height = 100;
+      ctx.fillRect(0,0,200,height);
+
+      // grid
+      ctx.strokeStyle = "rgba(0,0,0,0.25)";
+      ctx.lineWidth="0.25";
+
+      for (var i in all_times)
+      {
+        ctx.beginPath();
+        ctx.moveTo(i * 200.0 / (all_times.length - 1), 0);
+        ctx.lineTo(i * 200.0 / (all_times.length - 1), 100);
+        ctx.stroke();
+      }
+
+      for (var i = 0; i < height; i += height / 8)
+      {
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(200, i);
+        ctx.stroke();
+      }
+
+      // path
+      var time_min = 0;
+      var time_max = 0;
+
+      for (var i in all_times)
+        for (var j in all_times[i])
+          time_max = Math.max(time_max, all_times[i][j]);
+
+      for (var time_i in all_times[0])
+      {
+        ctx.strokeStyle = colors[time_i];
+        ctx.lineWidth="3";
+
+        ctx.beginPath();
+        ctx.moveTo(0, 100 - (all_times[0][time_i] - time_min) / (time_max - time_min) * 100);
+        for (var i in all_times)
+        {
+          var time = all_times[i][time_i];
+          ctx.lineTo(i * 200.0 / (all_times.length - 1), 100 - (time - time_min) / (time_max - time_min) * 100);
+        }
+        ctx.stroke();
+
+        time_i += 1;
+      }
+    }
+
+    function SetLevelData(hgVersion, metaData, fps)
+    {
+      var levelName = metaData[0];
+      var tagLine = metaData[1];
+      var layer = metaData[2];
+      var is3D = metaData[3];
+
+      if (levelName.length > 1)
+      {
+        var num = levelName[levelName.length - 1];
+        if (num < '0' || num > '9')
+          num = '3';
+        var str = "L=0" + num;
+        $("#level_number").html(str);
+      }
+
+      if (is3D == 0)
+      {
+        $('#arcade_score').show();
+      }
+      else
+      {
+        $('#arcade_score').hide();
+      }
+
+      $('#watermark').text("PERSPECTIVE PRESS PREVIEW | SeeWithPerspective.com | " + levelName );
+      $('#watermark').hide();
+
+      if (layer == 2)
+      {
+        $('#watermark').removeClass();
+        $('#watermark').addClass("layer_2");
+        $('#level_tagline').removeClass();
+        $('#level_tagline').addClass("tagline_layer_2");
+      }
+
+      if (layer == 1)
+      {
+        $('#watermark').removeClass();
+        $('#watermark').addClass("layer_1");
+        $('#level_tagline').removeClass();
+        $('#level_tagline').addClass("tagline_layer_1");
+      }
+
+      if (layer == 0)
+      {
+        $('#watermark').removeClass();
+        $('#watermark').addClass("layer_0");
+        $('#level_tagline').removeClass();
+        $('#level_tagline').addClass("tagline_layer_0");
+      }
+
+      // graph
+      fpses.push(fps);
+      if (fpses.length > 32)
+        fpses.shift();
+
+      var fps_min = Math.min.apply(Math, fpses);
+      var fps_max = Math.max.apply(Math, fpses);
+
+      var canvas = document.getElementById("fpsgraph");
+      var ctx = canvas.getContext("2d");
+
+      ctx.fillStyle = "rgba(255,255,255,1)";
+      var height = 100;
+      ctx.fillRect(0,0,200,height);
+
+      // grid
+      ctx.strokeStyle = "rgba(0,0,0,0.25)";
+      ctx.lineWidth="0.25";
+
+      for (var i in fpses)
+      {
+        ctx.beginPath();
+        ctx.moveTo(i * 200.0 / (fpses.length - 1), 0);
+        ctx.lineTo(i * 200.0 / (fpses.length - 1), 100);
+        ctx.stroke();
+      }
+
+      for (var i = 0; i < height; i += height / 8)
+      {
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(200, i);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = "#d00";
+      ctx.lineWidth="3";
+
+      // path
+      ctx.beginPath();
+      ctx.moveTo(0, 100 - (fpses[0] - fps_min) / (fps_max - fps_min) * 100);
+      for (var i in fpses)
+      {
+        var fps = fpses[i];
+        ctx.lineTo(i * 200.0 / (fpses.length - 1), 100 - (fps - fps_min) / (fps_max - fps_min) * 100);
+      }
+      ctx.stroke();
+
+      $('#fpsgraphmin').text("" + fps_min.toFixed(1));
+      $('#fpsgraphmax').text("" + fps_max.toFixed(1));
+      $('#fpsgraphfps').text("" + fps.toFixed(1));
+    }
+
+    function UpdateIndicator(x, y)
+    {
+      var indicator = document.getElementById("indicator");
+      var new_x = Math.max(-0.95, Math.min(0.95, x));
+      var new_y = Math.max(-0.90, Math.min(0.90, y));
+      var left = ((new_x * 0.5 + 0.5) * window.innerWidth) - 32 + "px";
+      var right = ((new_y * 0.5 + 0.5) * window.innerHeight) - 32 + "px";
+      indicator.style.left = left;
+      indicator.style.bottom = right;
+
+      if (new_x > x)
+        indicator.innerHTML = "<img src='img/Offscreen_Indicator_Left.png' width='64px' height='64px' />";
+      else if (new_x < x)
+        indicator.innerHTML = "<img src='img/Offscreen_Indicator_Right.png' width='64px' height='64px' />";
+      else if (new_y < y)
+        indicator.innerHTML = "<img src='img/Offscreen_Indicator_Up.png' width='64px' height='64px' />";
+      else if (new_y > y)
+        indicator.innerHTML = "<img src='img/Offscreen_Indicator_Down.png' width='64px' height='64px' />";
+      else
+      {
+        indicator.innerHTML = "";
+      }
+        
+    }
+    
+    function SetIndicatorVisible(vis)
+    {
+      var indicator = document.getElementById("indicator");
+      indicator.style.display = vis ? "block" : "none";
+    }
+
+    function ToggleGraphIntern(id)
+    {
+      var indicator = document.getElementById(id);
+      if (indicator.style.display == "block")
+        indicator.style.display = "none";
+      else
+        indicator.style.display = "block";
+    }
+    function ToggleGraph()
+    {
+      ToggleGraphIntern("fpsgraphbox");
+      ToggleGraphIntern("timegraphbox");
+    }
+
+    $(document).ready(function()
+    {
+      Resize(0);
+
+      message_stack = [];
+
+      // testing
+      if (typeof(Listen) == "undefined")
+      {
+        document.body.style["background"] = "gray";
+        var element = document.getElementById("message");
+        element.innerHTML = "<b>WASD</b> to Move";
+      }
+      
+      Listen("DisplayMessage", DisplayMessage);
+      Listen("HideMessage", HideMessage);
+      Listen("HideMessages", HideMessages);
+      Listen("Update", Update);
+      Listen("SetBrowserLevelData", SetLevelData);
+      Listen("UpdateIndicator", UpdateIndicator);
+      Listen("SetIndicatorVisible", SetIndicatorVisible);
+      
+      Listen("ToggleGraph", ToggleGraph);
+      Listen("DisplayTagline", DisplayTagline);
+      Listen("DisplayHub0Credits", DisplayHub0Credits);
+      Listen("DestroyHub0Credits", DestroyHub0Credits);
+
+      Listen("SystemTimes", UpdateSystemTimes);
+      Listen("SystemNames", UpdateSystemNames);
+
+      SendMessage("GetBrowserLevelData");
+      
+    });
+    
+    function Message(duration, message)
+    {
+      this.duration = duration;
+      this.message = message;
+      this.time = 0;
+    }
+    
+    function DisplayMessage(message, duration)
+    {
+      $("#message").html(message);
+      message_stack.push(new Message(duration, message));
+
+      $("#message").hide().fadeIn(500);
+
+      Update(0);
+    }
+
+    function DisplayTagline(message)
+    {
+      $('#level_tagline').css("font-size", "100px");
+      $('#level_tagline').html(message);
+      $('#level_tagline').hide().fadeIn(3000);
+      level_tagline_timer = 5.0;
+    }
+
+    function FadeNextCreditTitle(names)
+    {
+      if (names.length == 0) return;
+      var name = names[0];
+      names.shift();
+
+      $('#credits_title').html(name);
+      $('#credits_title').hide();
+
+      $('#credits_title').fadeIn(1000, function() {
+        $('#credits_title').fadeOut(50000, function() {
+          FadeNextCreditTitle(names);
+        });
+      });
+
+    }
+
+    var displaying_credits = false;
+
+    function FadeNextSubLine(names)
+    {
+      if (names.length == 0) return;
+      var name = names[0];
+      names.splice(0, 1);
+
+      $('#credits_subline').html(name);
+      $('#credits_subline').hide();
+
+      $('#credits_subline').fadeIn(1000).delay(4000).fadeOut(4000, 
+        function()
+        {
+          FadeNextSubLine(names);
+        }
+      );
+    }
+
+    function DisplayHub0Credits()
+    {
+      if (displaying_credits)
+        return;
+      displaying_credits = true;
+
+      var credits = new Array();
+
+      credits.push("<h1>Perspective</h1><br />All content (c) 2012-2019 DigiPen (USA) Corporation, all rights reserved.");
+      credits.push($('#credits0').html());
+      credits.push($('#credits1').html());
+      credits.push($('#credits2').html());
+      credits.push($('#credits3').html());
+      credits.push($('#credits4').html());
+
+      FadeNextSubLine(credits);
+    }
+
+
+    function DestroyHub0Credits()
+    {
+      if (!displaying_credits)
+        return;
+      displaying_credits = false;
+      
+      var credits = new Array();
+      FadeNextSubLine(credits);
+    }
+
+    function HideMessages()
+    {
+      $("#message").fadeOut(800);
+      message_stack = [];
+    }
+    
+    function HideMessage()
+    {
+      if (message_stack.length == 0) return;
+
+      message_stack.pop();
+      index = message_stack.length - 1; 
+
+      if (index >= 0)
+      {
+        $("#message").show().fadeOut(800, function()
+        {
+          index = message_stack.length - 1;
+          if (index >= 0)
+          {
+            $(this).html(message_stack[index].message);
+            $(this).hide().fadeIn(400);
+          }
+        });
+      }
+      else 
+      {
+        $("#message").fadeOut(800);
+      }
+    }
+    
+    function Update(dt)
+    {
+      if (level_tagline_timer >= 0.0)
+      {
+        level_tagline_timer -= dt;
+      } else if ($('#level_tagline').is(':visible'))
+      {
+        $('#level_tagline').fadeOut(500);
+      }
+
+      // nothing to do here, move along.
+      if (message_stack.length == 0) return;
+
+      for( var i = 0; i < message_stack.length; ++i )
+      {
+        message_stack[i].time += dt;
+      }
+      
+      var index = message_stack.length - 1;
+
+      if ( message_stack[index].time > message_stack[index].duration )
+      {
+        HideMessage();
+      }
+    }
+
+    function Resize(event) {
+      var element = document.getElementById("message");
+      if (element)
+      {
+        element.style["font-size"] = document.documentElement.clientHeight * 0.04 + "px";
+      }
+    }
+    window.onresize = Resize;
+  </script>
+ </head>
+
+<body>
+  <div id="watermark"></div>
+  <div id="arcade_score" style="width: 100%;">
+    <div style="float: left; margin-left: 3.5%;">
+      <img src="img/player.png" width="63px" height="45px" style="padding: 0; margin: 0 -10px; margin-top: 10px;" />
+      <img src="img/player.png" width="63px" height="45px" style="padding: 0; margin: 0 -10px; margin-top: 10px;" />
+      <img src="img/player.png" width="63px" height="45px" style="padding: 0; margin: 0 -10px; margin-top: 10px;" />
+    </div>
+    <div style="float: left; margin-left: 20px;">000100</div>
+    <div style="float: right; margin-right: 10%; color: #00f;" id="level_number">
+      L=01
+    </div>
+  </div>
+  <div class="popup">
+    <div id="message">
+    </div>
+  </div>
+  <div class="outer">
+  <div class="inner">
+    <div id="level_tagline"></div>
+  </div>
+  </div>
+  <div id="credits_title" style="text-align: center;"></div>
+  <div id="credits_subline" style="text-align: center;"></div>
+
+  <div id="timegraphbox" class="graphbox" style="float: left; margin-top: 30pt;">
+    <ul id="systemnames" style="float: left; font-size: 6pt; margin: 0 10pt; padding: 0;"></ul>
+    <div>
+      <canvas id="timegraph" width="200" height="100"></canvas>
+    </div>
+  </div>
+
+  <div id="fpsgraphbox" class="graphbox" style="float: left; margin-top: 30pt;">
+    <div>
+      <div>
+        <div id="fpsgraphmax">Max</div>
+        <div id="fpsgraphmin" style="margin-top: 90px;">Min</div>
+      </div>
+      <canvas id="fpsgraph" width="200" height="100"></canvas>
+    </div>
+    <br />
+    <div style="margin: 2px; float: right;"><span id="fpsgraphfps"></span> fps</div>
+  </div>
+
+  <div id="indicator">X</div>
+  <div id="ticket">0</div>
+
+  <div id="credits0" style="display: none;">
+    <h2>Developers</h2>
+    <ul style="list-style: none; padding: 0;">
+      <li>Laura Borgen</li>
+      <li>Pohung Chen</li>
+      <li>Logan Fieth</li>
+      <li>Ariel Gitomer</li>
+      <li>Jason Meisel</li>
+      <li>Eddie Peters</li>
+      <li>MJ Quigley</li>
+      <li>Sean Reilly</li>
+    </ul>
+  </div>
+
+  <div id="credits1" style="display: none;">
+    <h2>With Help From</h2>
+    <ul style="list-style: none; padding: 0;">
+      <li>Treb Connell</li>
+      <li>David Evans</li>
+      <li>Corey Kay</li>
+      <li>Killian Koenig</li>
+      <li>Curtis McCoy</li>
+    </ul>
+  </div>
+
+  <div id="credits2" style="display: none;">
+    <h2>DigiPen Institute of Technology</h2>
+    <ul style="list-style: none; padding: 0;">
+      <li><i>Instructor</i> - Benjamin Ellinger</li>
+      <li><i>Instructor</i> - Chris Peters</li>
+      <li><i>Instructor</i> - Rachel Rutherford</li>
+      <li><i>President</i> - Claude Comair</li>
+    </ul>
+  </div>
+
+  <div id="credits3" style="display: none;">
+    <h2>Special Thanks</h2>
+    <ul style="list-style: none; padding: 0;">
+      <li>Alexander Bruce</li>
+      <li>Brett Cutler</li>
+      <li>Taylor Edwards</li>
+      <li>Danny Frisbie</li>
+      <li>Cody Pritchard</li>
+      <li>Benjamin Strukus</li>
+      <li>Ty Taylor</li>
+      <li>DigiPen Game Design Club</li>
+      <li>DigiPen Playtesting Club</li>
+      <li>Uncles Games Redmond</li>
+    </ul>
+  </div>
+
+  <div id="credits4" style="display: none;">
+    Thanks for Playing!
+  </div>
+</body>
+</html>
