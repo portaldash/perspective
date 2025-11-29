@@ -1,1 +1,0 @@
-document.onselectstart=new Function ("return false")
